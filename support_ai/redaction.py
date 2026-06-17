@@ -29,3 +29,14 @@ def redact_record(value: Any) -> Any:
     if isinstance(value, list):
         return [redact_record(item) for item in value]
     return value
+
+
+def redact_credit_card(text: str) -> str:
+    """Redact 16-digit card numbers formatted with spaces, dashes, or contiguous.
+
+    Billing support tickets sometimes contain card numbers in free-text;
+    this prevents them from reaching application logs or API responses.
+    """
+    import re
+    pattern = r"\b(?:\d[ -]?){15}\d\b"
+    return re.sub(pattern, "[REDACTED-CC]", text)
