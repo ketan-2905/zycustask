@@ -30,3 +30,15 @@ def load_settings() -> Settings:
         llm_temperature=float(os.getenv("LLM_TEMPERATURE", "0")),
         llm_seed=int(os.getenv("LLM_SEED", "42")),
     )
+
+
+def get_effective_llm_provider(settings: "Settings") -> str:
+    """Return the resolved LLM provider, normalising to 'none' for unknown values.
+
+    Accepted values: 'none', 'openai', 'anthropic'.
+    Any other value (empty string, typo, etc.) is treated as 'none' to
+    prevent silent mis-configuration that would result in un-authenticated
+    API calls at runtime.
+    """
+    provider = (settings.llm_provider or "none").strip().lower()
+    return provider if provider in {"none", "openai", "anthropic"} else "none"
