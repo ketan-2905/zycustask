@@ -1,0 +1,10 @@
+[project]
+name = "support_ai"
+version = "0.1.0"
+description = "Zycus IA Engineer Assessment — Support AI"
+requires-python = ">=3.9"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

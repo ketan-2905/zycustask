@@ -1,0 +1,224 @@
+{
+  "communities": {
+    "0": [
+      "llm_client",
+      "llm_client_llmclient",
+      "llm_client_llmclient_call_openai",
+      "llm_client_llmclient_enabled",
+      "llm_client_llmclient_generate_json",
+      "llm_client_llmclient_init",
+      "llm_client_llmunavailable",
+      "llm_client_py_settings",
+      "redaction",
+      "redaction_py_any",
+      "redaction_redact_pii",
+      "redaction_redact_record",
+      "runtimeerror"
+    ],
+    "1": [
+      "data_loader",
+      "data_loader_coerce_records",
+      "data_loader_dataset_health",
+      "data_loader_extract_first",
+      "data_loader_get_account_by_id",
+      "data_loader_get_tickets_for_account",
+      "data_loader_load_accounts",
+      "data_loader_load_json_file",
+      "data_loader_load_tickets",
+      "data_loader_parse_datetime",
+      "data_loader_py_any",
+      "deterministic_stable_hash"
+    ],
+    "2": [
+      "deterministic",
+      "deterministic_clamp_score",
+      "deterministic_clip_text",
+      "deterministic_dedupe_keep_order",
+      "deterministic_normalise_text",
+      "deterministic_py_any",
+      "deterministic_safe_float",
+      "deterministic_sorted_dict",
+      "deterministic_stable_json",
+      "deterministic_tokenize",
+      "kb_retrieval_make_snippet",
+      "t"
+    ],
+    "3": [
+      "basemodel",
+      "datahealth",
+      "loadedaccount",
+      "loadedticket",
+      "schemas",
+      "schemas_accountbrief",
+      "schemas_datahealth",
+      "schemas_evalcaseresult",
+      "schemas_knowledgedoc",
+      "schemas_loadedaccount",
+      "schemas_loadedticket"
+    ],
+    "4": [
+      "kb_retrieval",
+      "kb_retrieval_build_doc_id",
+      "kb_retrieval_extract_category",
+      "kb_retrieval_extract_title",
+      "kb_retrieval_lexical_score",
+      "kb_retrieval_load_knowledge_docs",
+      "kb_retrieval_py_retrievalmatch",
+      "kb_retrieval_retrieve_docs",
+      "knowledgedoc"
+    ],
+    "5": [
+      "triage",
+      "triage_draft_first_response",
+      "triage_infer_issue_category",
+      "triage_infer_product_area",
+      "triage_infer_urgency_tier",
+      "triage_recommend_team",
+      "triage_signal_hits",
+      "triage_triage_ticket",
+      "triageoutput"
+    ],
+    "6": [
+      "schemas_retrievalmatch",
+      "schemas_ticketinput",
+      "schemas_triageoutput",
+      "ticketinput",
+      "triage_normalize_ticket_input",
+      "triage_py_any",
+      "triage_py_retrievalmatch",
+      "triage_py_settings"
+    ],
+    "7": [
+      "config",
+      "config_load_settings",
+      "config_settings"
+    ],
+    "8": [
+      "init"
+    ]
+  },
+  "cohesion": {
+    "0": 0.21794871794871795,
+    "1": 0.3939393939393939,
+    "2": 0.24242424242424243,
+    "3": 0.38181818181818183,
+    "4": 0.3888888888888889,
+    "5": 0.4722222222222222,
+    "6": 0.5,
+    "7": 1.0,
+    "8": 1.0
+  },
+  "gods": [
+    {
+      "id": "triage_triage_ticket",
+      "label": "triage_ticket()",
+      "degree": 14
+    },
+    {
+      "id": "config_settings",
+      "label": "Settings",
+      "degree": 10
+    },
+    {
+      "id": "schemas_retrievalmatch",
+      "label": "RetrievalMatch",
+      "degree": 9
+    },
+    {
+      "id": "data_loader_load_tickets",
+      "label": "load_tickets()",
+      "degree": 8
+    },
+    {
+      "id": "data_loader_load_accounts",
+      "label": "load_accounts()",
+      "degree": 7
+    },
+    {
+      "id": "schemas_ticketinput",
+      "label": "TicketInput",
+      "degree": 7
+    },
+    {
+      "id": "schemas_triageoutput",
+      "label": "TriageOutput",
+      "degree": 7
+    },
+    {
+      "id": "kb_retrieval_load_knowledge_docs",
+      "label": "load_knowledge_docs()",
+      "degree": 6
+    },
+    {
+      "id": "kb_retrieval_retrieve_docs",
+      "label": "retrieve_docs()",
+      "degree": 6
+    },
+    {
+      "id": "llm_client_llmclient",
+      "label": "LLMClient",
+      "degree": 6
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Settings",
+      "target": "Settings",
+      "source_files": [
+        "llm_client.py",
+        "config.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `Settings` unexpectedly reaches hub `Settings`"
+    },
+    {
+      "source": "LLMClient",
+      "target": "Settings",
+      "source_files": [
+        "llm_client.py",
+        "config.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "LLMUnavailable",
+      "target": "Settings",
+      "source_files": [
+        "llm_client.py",
+        "config.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "TicketInput",
+      "target": "Settings",
+      "source_files": [
+        "triage.py",
+        "config.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "Any",
+      "target": "Settings",
+      "source_files": [
+        "triage.py",
+        "config.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}
