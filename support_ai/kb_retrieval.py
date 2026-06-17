@@ -120,3 +120,16 @@ def retrieve_docs(
         )))
     scored.sort(key=lambda x: (-x[0], x[1]))
     return [match for _, _, match in scored[:top_k]]
+
+
+def kb_doc_count(kb_dir: str) -> int:
+    """Return the number of knowledge-base documents found in *kb_dir*.
+
+    Returns 0 if the directory is missing or empty rather than raising.
+    Used by /kb-health to report KB coverage without loading all content.
+    """
+    try:
+        docs = load_knowledge_docs(kb_dir)
+        return len(docs)
+    except Exception:
+        return 0
