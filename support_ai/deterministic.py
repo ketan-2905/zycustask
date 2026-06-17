@@ -67,3 +67,14 @@ def clamp_score(value: Any, default: float = 0.0) -> float:
     except (TypeError, ValueError):
         pass
     return round(min(1.0, max(0.0, v)), 3)
+
+
+def truncate_text(text: str, max_chars: int = 500) -> str:
+    """Return *text* truncated to *max_chars*, appending '…' when cut.
+
+    Centralises truncation logic to prevent divergent lengths creeping in
+    across draft-response generation and KB snippet display.
+    """
+    if len(text) <= max_chars:
+        return text
+    return text[:max_chars].rstrip() + "…"
