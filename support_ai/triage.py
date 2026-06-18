@@ -271,3 +271,21 @@ def triage_ticket(
         draft_response=draft,
         confidence=confidence,
     )
+
+
+def batch_triage(tickets: list, kb_dir=None, settings=None) -> list:
+    """Triage a list of tickets and return a list of TriageOutput objects.
+
+    Convenience wrapper for bulk processing in the evaluation harness and CLI.
+    Preserves per-ticket contract and avoids duplicating kb_dir / settings
+    plumbing at every call site.
+
+    Args:
+        tickets: List of ticket dicts or TicketInput instances.
+        kb_dir: Optional path to the knowledge-base directory.
+        settings: Optional Settings instance; loads from env if not provided.
+
+    Returns:
+        List of TriageOutput objects in the same order as the input.
+    """
+    return [triage_ticket(t, kb_dir=kb_dir, settings=settings) for t in tickets]
