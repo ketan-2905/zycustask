@@ -94,3 +94,14 @@ class LLMClient:
         )
         content = response.choices[0].message.content or "{}"
         return json.loads(content)
+
+
+def is_llm_enabled(settings=None) -> bool:
+    """Return True if an active (non-none) LLM provider is configured.
+
+    Centralises the 'is LLM active?' check so every call-site avoids
+    re-implementing the provider string comparison.
+    """
+    from support_ai.config import load_settings as _load
+    s = settings or _load()
+    return (s.llm_provider or "none").strip().lower() != "none"
