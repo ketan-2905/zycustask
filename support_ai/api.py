@@ -54,3 +54,20 @@ def account_brief(account_id: str) -> AccountBrief:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except AccountNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.get("/kb-health")
+def kb_health() -> dict:
+    """Return the count of knowledge-base documents currently loaded.
+
+    Useful in Kubernetes readiness probes that need granular service health
+    beyond the basic /health check.
+    """
+    from support_ai.kb_retrieval import kb_doc_count
+    settings = load_settings()
+    count = kb_doc_count(settings.kb_dir)
+    return {
+        "kb_dir": settings.kb_dir,
+        "document_count": count,
+        "status": "ok" if count > 0 else "empty",
+    }
