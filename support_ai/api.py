@@ -71,3 +71,15 @@ def kb_health() -> dict:
         "document_count": count,
         "status": "ok" if count > 0 else "empty",
     }
+
+
+@app.get("/tickets/stats")
+def ticket_stats() -> dict:
+    """Return high-level ticket dataset statistics for ops dashboards.
+
+    Returns gracefully with zeroed counts when the starter dataset is absent
+    so monitoring dashboards do not error when data has not been seeded.
+    """
+    from support_ai.data_loader import ticket_summary_stats
+    settings = load_settings()
+    return ticket_summary_stats(settings.data_dir)
