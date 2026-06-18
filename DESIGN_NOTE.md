@@ -68,3 +68,27 @@ At 10× volume the two bottlenecks are JSON file I/O and linear account-ticket s
 3. **Account-ticket map:** Pre-build a `Dict[account_id, List[ticket_id]]` at startup and refresh on file change, reducing per-request work to a single dict lookup.
 4. **Async API:** Switch `account_brief` endpoint to `async def` with `asyncio.to_thread` for file I/O, allowing the FastAPI event loop to serve concurrent requests without blocking.
 5. **Horizontal scaling:** The service is stateless (all state is in the data files); adding instances behind a load balancer requires only a shared read-only data volume.
+
+---
+
+## Rate-limiting & Throttling Considerations
+
+The current HTTP API has no rate-limiting layer. For production deployment the
+following approach is recommended:
+
+1. **API Gateway / Reverse proxy** (e.g., nginx, AWS API Gateway) — enforce
+   per-IP and per-token request quotas upstream; the Python service stays
+   stateless.
+2. **Token-bucket on the LLM path** — when `LLM_PROVIDER != none`, wrap the
+   LLM client with a token-bucket to prevent runaway spend during eval spikes.
+3. **Async worker queue** — replace synchronous `/triage` with an async job
+   submission pattern (Celery + Redis or AWS SQS) for bulk ingestion scenarios.
+
+## Observability & Monitoring
+
+- **Structured logging**: All modules should use `get_logger(__name__)` from
+  `logging_utils.py` so logs are machine-parseable in CloudWatch / Datadog.
+- **Health endpoints**: `/health`, `/kb-health`, and `/data-health` are
+  suitable for k8s liveness and readiness probes respectively.
+- **Metrics**: A future iteration should expose Prometheus counters for triage
+  category distribution and urgency tier distribution to detect data drift.
