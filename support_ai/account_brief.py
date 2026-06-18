@@ -332,3 +332,37 @@ def generate_account_brief(
         source_ticket_ids=source_ids,
         deterministic=True,
     )
+
+
+def account_brief_as_markdown(brief) -> str:
+    """Render an AccountBrief as a human-readable Markdown string.
+
+    Keeps rendering logic separate from generation logic (single-responsibility).
+    Suitable for use in Slack notifications, email summaries, and CLI
+    --format=markdown output.
+    """
+    lines = [
+        f"# Account Brief: {brief.account_id}",
+        "",
+        "## Executive Summary",
+        brief.executive_summary or "_No summary available._",
+        "",
+        "## Open Risks & Flagged Issues",
+    ]
+    if brief.open_risks_and_flagged_issues:
+        for risk in brief.open_risks_and_flagged_issues:
+            lines.append(f"- {risk}")
+    else:
+        lines.append("_No risks flagged._")
+
+    lines += [
+        "",
+        "## Recommended Talking Points",
+    ]
+    if brief.recommended_talking_points:
+        for tp in brief.recommended_talking_points:
+            lines.append(f"- {tp}")
+    else:
+        lines.append("_No talking points generated._")
+
+    return "\n".join(lines)
