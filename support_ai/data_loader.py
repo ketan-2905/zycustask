@@ -160,3 +160,31 @@ def dataset_health(data_dir: str) -> DataHealth:
         tickets_error=tkt_error,
         ready_for_account_briefs=acc_count > 0 and tkt_error is None,
     )
+
+
+def ticket_summary_stats(data_dir: str) -> dict:
+    """Return high-level aggregate statistics about the ticket dataset.
+
+    Returns a dict with keys:
+        total (int): Number of tickets loaded.
+        by_priority (dict): Count per priority value.
+        categories_seen (list): Placeholder for future category indexing.
+
+    Fails gracefully to zeroed stats when data is absent so callers do not
+    need to guard against exceptions — check total > 0 before rendering charts.
+    """
+    try:
+        tickets = load_tickets(data_dir)
+    except Exception:
+        return {"total": 0, "by_priority": {}, "categories_seen": []}
+
+    by_priority: dict = {}
+    for t in tickets:
+        p = getattr(t, "priority", "unknown") or "unknown"
+        by_priority[p] = by_priority.get(p, 0) + 1
+
+    return {
+        "total": len(tickets),
+        "by_priority": by_priority,
+        "categories_seen": [],
+    }
