@@ -3,3 +3,15 @@ __pycache__/
 .pytest_cache/
 .env
 *.pyc
+
+# Python toolchain artefacts
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Test coverage artefacts
+.coverage
+htmlcov/
+junit.xml
