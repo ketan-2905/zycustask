@@ -2,6 +2,10 @@
 
 [▶️ Click here to watch the walkthrough](https://drive.google.com/drive/folders/1RcGZ3KcqwFCDzGMeeaIPEmeXC-CgRA80?usp=sharing)
 
+## 🚀 Live App
+
+[🌐 Open Streamlit App](https://zycustask-npppenpvx42zwcfxxudpep.streamlit.app/)
+
 ---
 
 # Zycus Support AI
