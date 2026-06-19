@@ -1,21 +1,23 @@
 """Streamlit UI for Zycus Support AI.
 
 Entry point: streamlit run support_ai/ui.py
+
+No unsafe_allow_html is used — all styling is done via native Streamlit
+components and .streamlit/config.toml so the app renders correctly on
+Streamlit Cloud without raw HTML leaking into the page.
 """
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
-# ── Path fix: ensure project root is on sys.path so `support_ai` is importable
-# whether the app is run locally (python -m streamlit run support_ai/ui.py)
-# or on Streamlit Cloud (where CWD may not be on PYTHONPATH).
-_ROOT = Path(__file__).resolve().parent.parent  # …/zycustask/
+# ── Ensure project root is on sys.path so `support_ai` is importable on Cloud
+_ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
 
-def main() -> None:  # noqa: PLR0912, PLR0915  (many branches/statements by design)
+def main() -> None:
     import pandas as pd
     import streamlit as st
 
@@ -29,7 +31,7 @@ def main() -> None:  # noqa: PLR0912, PLR0915  (many branches/statements by desi
     from support_ai.evals import render_markdown_report, run_all_evals
     from support_ai.triage import triage_ticket
 
-    # ── Page config ────────────────────────────────────────────────────────────
+    # ── Page config ─────────────────────────────────────────────────────────
     st.set_page_config(
         page_title="Zycus Support AI",
         page_icon="🤖",
@@ -37,315 +39,131 @@ def main() -> None:  # noqa: PLR0912, PLR0915  (many branches/statements by desi
         initial_sidebar_state="expanded",
     )
 
-    # ── Custom CSS ─────────────────────────────────────────────────────────────
-    st.markdown(
-        """
-        <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-        html, body, [class*="css"] {
-            font-family: 'Inter', sans-serif;
-        }
-
-        /* Dark gradient background */
-        .stApp {
-            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-            min-height: 100vh;
-        }
-
-        /* Hero header */
-        .hero-header {
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            border-radius: 16px;
-            padding: 2rem 2.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
-        }
-        .hero-header h1 {
-            color: white !important;
-            font-size: 2.2rem !important;
-            font-weight: 700 !important;
-            margin: 0 !important;
-        }
-        .hero-header p {
-            color: rgba(255,255,255,0.85) !important;
-            font-size: 1rem !important;
-            margin: 0.4rem 0 0 !important;
-        }
-
-        /* Cards */
-        .card {
-            background: rgba(255, 255, 255, 0.07);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 14px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
-        }
-
-        /* Badge chips */
-        .badge {
-            display: inline-block;
-            padding: 0.2rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-        }
-        .badge-p1 { background: #ff4757; color: white; }
-        .badge-p2 { background: #ff6b35; color: white; }
-        .badge-p3 { background: #ffa502; color: #1a1a1a; }
-        .badge-p4 { background: #2ed573; color: #1a1a1a; }
-        .badge-info { background: #5352ed; color: white; }
-
-        /* Result metric cards */
-        .result-card {
-            background: rgba(102, 126, 234, 0.15);
-            border: 1px solid rgba(102, 126, 234, 0.3);
-            border-radius: 12px;
-            padding: 1.25rem;
-            text-align: center;
-        }
-        .result-card .label {
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: rgba(255,255,255,0.6);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-        }
-        .result-card .value {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #a78bfa;
-            margin-top: 0.25rem;
-        }
-
-        /* Draft response box */
-        .draft-box {
-            background: rgba(0,0,0,0.3);
-            border-left: 4px solid #667eea;
-            border-radius: 0 10px 10px 0;
-            padding: 1.2rem 1.5rem;
-            color: rgba(255,255,255,0.9);
-            font-size: 0.95rem;
-            line-height: 1.7;
-            white-space: pre-wrap;
-        }
-
-        /* Tab styling */
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 0.5rem;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 0.35rem;
-        }
-        .stTabs [data-baseweb="tab"] {
-            border-radius: 9px !important;
-            font-weight: 500 !important;
-            color: rgba(255,255,255,0.7) !important;
-        }
-        .stTabs [aria-selected="true"] {
-            background: linear-gradient(90deg, #667eea, #764ba2) !important;
-            color: white !important;
-        }
-
-        /* Buttons */
-        .stButton > button {
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 10px !important;
-            font-weight: 600 !important;
-            padding: 0.55rem 1.8rem !important;
-            transition: all 0.2s ease !important;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35) !important;
-        }
-        .stButton > button:hover {
-            transform: translateY(-2px) !important;
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.55) !important;
-        }
-
-        /* Sidebar */
-        [data-testid="stSidebar"] {
-            background: rgba(15, 12, 41, 0.95) !important;
-            border-right: 1px solid rgba(255,255,255,0.08) !important;
-        }
-
-        /* Inputs */
-        .stTextInput input, .stTextArea textarea {
-            background: rgba(255,255,255,0.07) !important;
-            border: 1px solid rgba(255,255,255,0.15) !important;
-            border-radius: 10px !important;
-            color: white !important;
-        }
-        .stTextInput input:focus, .stTextArea textarea:focus {
-            border-color: #667eea !important;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.25) !important;
-        }
-
-        /* Metrics */
-        [data-testid="metric-container"] {
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 1rem;
-        }
-        [data-testid="stMetricLabel"] { color: rgba(255,255,255,0.65) !important; }
-        [data-testid="stMetricValue"] { color: #a78bfa !important; }
-
-        /* Section dividers */
-        .section-title {
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: rgba(255,255,255,0.4);
-            margin: 1.2rem 0 0.6rem;
-        }
-
-        /* Dataframe */
-        .stDataFrame { border-radius: 12px; overflow: hidden; }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # ── Hero header ────────────────────────────────────────────────────────────
-    st.markdown(
-        """
-        <div class="hero-header">
-          <h1>🤖 Zycus Support AI</h1>
-          <p>AI-powered ticket triage · TAM account briefs · Evaluation harness</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     settings = load_settings()
 
-    # ── Sidebar ────────────────────────────────────────────────────────────────
+    # ── Sidebar ──────────────────────────────────────────────────────────────
     with st.sidebar:
+        st.title("🤖 Zycus Support AI")
+        st.caption("AI-powered ticket triage · TAM account briefs · Evaluation harness")
+        st.divider()
         st.markdown("### ⚙️ Configuration")
         st.markdown(f"**LLM Provider:** `{settings.llm_provider}`")
         st.markdown(f"**Data Dir:** `{settings.data_dir}`")
         st.markdown(f"**KB Dir:** `{settings.kb_dir}`")
         st.markdown(f"**App Env:** `{settings.app_env}`")
-        st.markdown("---")
-        st.markdown("### 📚 Quick links")
-        st.markdown("- [README](https://github.com/ketan-2905/zycustask/blob/main/README.md)")
-        st.markdown("- [Design Note](https://github.com/ketan-2905/zycustask/blob/main/DESIGN_NOTE.md)")
-        st.markdown("---")
+        st.divider()
+        st.markdown("### 📚 Links")
+        st.markdown("[📖 README](https://github.com/ketan-2905/zycustask/blob/main/README.md)")
+        st.markdown("[🏗️ Design Note](https://github.com/ketan-2905/zycustask/blob/main/DESIGN_NOTE.md)")
+        st.divider()
         st.caption("All responses are fully deterministic by default (LLM_PROVIDER=none).")
 
-    # ── Tabs ───────────────────────────────────────────────────────────────────
+    # ── Main title ───────────────────────────────────────────────────────────
+    st.title("🤖 Zycus Support AI")
+    st.caption("AI-powered ticket triage · TAM account briefs · Evaluation harness")
+    st.divider()
+
+    # ── Tabs ─────────────────────────────────────────────────────────────────
     tab_health, tab_triage, tab_brief, tab_eval = st.tabs(
         ["🏥 Data Health", "🎫 Ticket Triage", "📊 Account Brief", "🧪 Evaluation"]
     )
 
-    # ── Tab 1: Data Health ─────────────────────────────────────────────────────
+    # ════════════════════════════════════════════════════════════════════════
+    # Tab 1 – Data Health
+    # ════════════════════════════════════════════════════════════════════════
     with tab_health:
-        st.markdown("### Data & Knowledge-Base Health")
+        st.header("Data & Knowledge-Base Health")
         health = dataset_health(settings.data_dir)
 
-        overall_ok = health.ready_for_account_briefs
-        if overall_ok:
-            st.success("✅ Data files are present and ready.")
+        if health.ready_for_account_briefs:
+            st.success("✅ Data files are present and ready for account briefs.")
         else:
             st.warning(
-                "⚠️ Data files are missing or empty. Account-brief and triage will still work "
-                "using deterministic rules, but account-specific briefs need starter data.\n\n"
-                f"Expected: `{health.accounts_path}`, `{health.tickets_path}`"
+                "⚠️ Data files are missing or empty. Ticket triage still works with "
+                "deterministic rules, but account-specific briefs need starter data.\n\n"
+                f"Expected paths: `{health.accounts_path}` · `{health.tickets_path}`"
             )
 
         col1, col2 = st.columns(2)
+
         with col1:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            st.markdown("#### 👥 Accounts dataset")
-            c1a, c1b, c1c = st.columns(3)
-            c1a.metric("Exists", "✓" if health.accounts_exists else "✗")
-            c1b.metric("Records", health.accounts_count)
-            c1c.metric("Bytes", health.accounts_bytes)
+            st.subheader("👥 Accounts dataset")
+            a1, a2, a3 = st.columns(3)
+            a1.metric("Exists", "✓" if health.accounts_exists else "✗")
+            a2.metric("Records", health.accounts_count)
+            a3.metric("Bytes", health.accounts_bytes)
             if health.accounts_error:
                 st.error(f"Error: {health.accounts_error}")
-            st.markdown("</div>", unsafe_allow_html=True)
+
         with col2:
-            st.markdown('<div class="card">', unsafe_allow_html=True)
-            st.markdown("#### 🎫 Tickets dataset")
-            c2a, c2b, c2c = st.columns(3)
-            c2a.metric("Exists", "✓" if health.tickets_exists else "✗")
-            c2b.metric("Records", health.tickets_count)
-            c2c.metric("Bytes", health.tickets_bytes)
+            st.subheader("🎫 Tickets dataset")
+            b1, b2, b3 = st.columns(3)
+            b1.metric("Exists", "✓" if health.tickets_exists else "✗")
+            b2.metric("Records", health.tickets_count)
+            b3.metric("Bytes", health.tickets_bytes)
             if health.tickets_error:
                 st.error(f"Error: {health.tickets_error}")
-            st.markdown("</div>", unsafe_allow_html=True)
 
         with st.expander("🔍 Raw health JSON"):
             st.json(health.model_dump())
 
-    # ── Tab 2: Ticket Triage ───────────────────────────────────────────────────
+    # ════════════════════════════════════════════════════════════════════════
+    # Tab 2 – Ticket Triage
+    # ════════════════════════════════════════════════════════════════════════
     with tab_triage:
-        st.markdown("### Triage a Support Ticket")
+        st.header("Triage a Support Ticket")
         st.caption(
-            "Enter a ticket subject and body. The engine classifies category, urgency, "
-            "routes to the right team, and drafts a first response — all without an LLM."
+            "The engine classifies category, urgency, routes to the right team, and drafts a "
+            "first response — all deterministically, no LLM required."
         )
+
+        # Demo presets
+        _PRESETS: dict[str, tuple[str, str]] = {
+            "P1 Outage – production system down for all users": (
+                "Production system down",
+                "Complete outage for all users in production. System is down and data loss is occurring.",
+            ),
+            "Billing – invoice charged twice this cycle": (
+                "Invoice is incorrect",
+                "We were charged twice for our subscription this billing cycle.",
+            ),
+            "SSO – SAML login broken for all users": (
+                "SSO login broken",
+                "Users cannot authenticate via SAML SSO since this morning. All production users affected.",
+            ),
+            "API – webhook endpoint returning 500 errors": (
+                "Webhook failing",
+                "Our webhook endpoint is returning 500 on every POST payload. Integration is broken.",
+            ),
+            "How-to – how do I configure SSO?": (
+                "How to configure SSO",
+                "I have a question about how to set up SAML SSO. Need documentation or a guide.",
+            ),
+        }
+
+        preset_options = ["— select a demo ticket —", *_PRESETS.keys()]
+        preset = st.selectbox("🚀 Quick demo presets", preset_options)
+
+        if preset != "— select a demo ticket —":
+            _default_subject, _default_body = _PRESETS[preset]
+        else:
+            _default_subject, _default_body = "", ""
 
         subject = st.text_input(
             "Subject",
+            value=_default_subject,
             placeholder="e.g. SSO login failing for all production users",
         )
         body = st.text_area(
             "Body / Description",
+            value=_default_body,
             placeholder="Describe the issue in detail…",
             height=130,
         )
 
-        col_presets, _ = st.columns([3, 1])
-        with col_presets:
-            preset = st.selectbox(
-                "Quick presets",
-                [
-                    "— pick a demo ticket —",
-                    "P1 Outage: Production system down for all users",
-                    "Billing: Invoice charged twice this cycle",
-                    "SSO: SAML login broken for all users",
-                    "API: Webhook endpoint returning 500 errors",
-                    "How-to: How do I configure SSO?",
-                ],
-                label_visibility="collapsed",
-            )
-
-        if preset and preset != "— pick a demo ticket —":
-            _demos = {
-                "P1 Outage: Production system down for all users": (
-                    "Production system down",
-                    "Complete outage for all users in production. System is down and data loss is occurring.",
-                ),
-                "Billing: Invoice charged twice this cycle": (
-                    "Invoice is incorrect",
-                    "We were charged twice for our subscription this billing cycle.",
-                ),
-                "SSO: SAML login broken for all users": (
-                    "SSO login broken",
-                    "Users cannot authenticate via SAML SSO since this morning. All production users affected.",
-                ),
-                "API: Webhook endpoint returning 500 errors": (
-                    "Webhook failing",
-                    "Our webhook endpoint is returning 500 on every POST payload. Integration is broken.",
-                ),
-                "How-to: How do I configure SSO?": (
-                    "How to configure SSO",
-                    "I have a question about how to set up SAML SSO. Need documentation or a guide.",
-                ),
-            }
-            _subj, _body = _demos[preset]
-            subject = _subj
-            body = _body
-
-        if st.button("🚀 Triage ticket", key="triage_btn"):
-            if not subject and not body:
-                st.warning("Please enter a subject or body.")
+        if st.button("🚀 Triage ticket", key="triage_btn", use_container_width=False):
+            if not subject.strip() and not body.strip():
+                st.warning("Please enter a subject or body before triaging.")
             else:
                 with st.spinner("Analysing ticket…"):
                     result = triage_ticket(
@@ -354,60 +172,56 @@ def main() -> None:  # noqa: PLR0912, PLR0915  (many branches/statements by desi
                         settings=settings,
                     )
 
-                st.markdown("---")
-                st.markdown("#### 📋 Triage Result")
+                st.divider()
+                st.subheader("📋 Triage Result")
 
-                # Priority badge colours
-                _badge_class = {
-                    "P1": "badge-p1",
-                    "P2": "badge-p2",
-                    "P3": "badge-p3",
-                    "P4": "badge-p4",
-                }.get(result.urgency_tier, "badge-info")
-
-                st.markdown(
-                    f'<span class="badge {_badge_class}">{result.urgency_tier} — {result.urgency_tier}</span>',
-                    unsafe_allow_html=True,
-                )
+                # Priority label mapping
+                _priority_labels = {
+                    "P1": "🔴 P1 — Critical",
+                    "P2": "🟠 P2 — High",
+                    "P3": "🟡 P3 — Medium",
+                    "P4": "🟢 P4 — Low",
+                }
+                priority_label = _priority_labels.get(result.urgency_tier, result.urgency_tier)
 
                 col_a, col_b, col_c, col_d = st.columns(4)
-                col_a.metric("🚨 Urgency", result.urgency_tier)
+                col_a.metric("🚨 Priority", priority_label)
                 col_b.metric("🏷️ Category", result.issue_category.replace("_", " ").title())
                 col_c.metric("📐 Confidence", f"{result.confidence:.0%}")
-                col_d.metric("🏢 Product Area", result.product_area.title())
+                col_d.metric("🏢 Product Area", result.product_area.replace("_", " ").title())
 
-                st.markdown(
-                    f'<div class="card">'
-                    f'<div class="section-title">Recommended Team</div>'
-                    f'<div style="font-size:1.15rem;font-weight:600;color:#a78bfa;">🏆 {result.recommended_team}</div>'
-                    f'<div class="section-title" style="margin-top:1rem;">Reasoning</div>'
-                    f'<div style="color:rgba(255,255,255,0.8);font-size:0.9rem;">{result.reasoning}</div>'
-                    f"</div>",
-                    unsafe_allow_html=True,
-                )
+                st.info(f"**🏆 Recommended Team:** {result.recommended_team}")
+
+                with st.expander("🧠 Reasoning", expanded=True):
+                    st.write(result.reasoning)
 
                 if result.known_issue_match:
-                    st.info(f"🔗 Known issue match: `{result.known_issue_match}`")
+                    st.success(f"🔗 Known issue match: `{result.known_issue_match}`")
 
                 if result.relevant_docs:
                     with st.expander(f"📚 Relevant KB docs ({len(result.relevant_docs)})"):
                         for doc in result.relevant_docs:
                             st.markdown(
-                                f"- **{doc.title}** — score `{doc.score:.2f}`  \n  {doc.snippet}"
+                                f"**{doc.title}** — score `{doc.score:.2f}`  \n{doc.snippet}"
                             )
 
-                st.markdown("#### ✉️ Draft First Response")
-                st.markdown(
-                    f'<div class="draft-box">{result.draft_response}</div>',
-                    unsafe_allow_html=True,
+                st.subheader("✉️ Draft First Response")
+                st.text_area(
+                    "Draft (read-only)",
+                    value=result.draft_response,
+                    height=160,
+                    disabled=True,
+                    label_visibility="collapsed",
                 )
 
-    # ── Tab 3: TAM Account Brief ───────────────────────────────────────────────
+    # ════════════════════════════════════════════════════════════════════════
+    # Tab 3 – TAM Account Brief
+    # ════════════════════════════════════════════════════════════════════════
     with tab_brief:
-        st.markdown("### TAM Account Brief Generator")
+        st.header("TAM Account Brief Generator")
         st.caption(
-            "Generate an executive-ready account brief with risk flags and talking points. "
-            "Requires the starter data files (`data/accounts.json`, `data/tickets.json`)."
+            "Generate an executive-ready brief with risk flags and talking points. "
+            "Requires `data/accounts.json` and `data/tickets.json`."
         )
 
         account_id = st.text_input("Account ID", placeholder="e.g. ACC-001")
@@ -416,7 +230,7 @@ def main() -> None:  # noqa: PLR0912, PLR0915  (many branches/statements by desi
             if not account_id.strip():
                 st.warning("Please enter an account ID.")
             else:
-                with st.spinner("Generating brief…"):
+                with st.spinner("Generating account brief…"):
                     try:
                         brief = generate_account_brief(
                             account_id.strip(),
@@ -424,61 +238,56 @@ def main() -> None:  # noqa: PLR0912, PLR0915  (many branches/statements by desi
                             settings=settings,
                         )
 
-                        st.markdown("---")
-                        st.markdown(
-                            f'<div class="card">'
-                            f'<div style="font-size:0.75rem;font-weight:600;text-transform:uppercase;'
-                            f'letter-spacing:0.1em;color:rgba(255,255,255,0.5);">Account</div>'
-                            f'<div style="font-size:1.5rem;font-weight:700;color:white;">'
-                            f'{account_id.strip()}</div>'
-                            f"</div>",
-                            unsafe_allow_html=True,
-                        )
+                        st.divider()
+                        st.subheader(f"📋 Brief — {account_id.strip()}")
 
-                        st.markdown("#### 📝 Executive Summary")
-                        st.markdown(
-                            f'<div class="draft-box">{brief.executive_summary}</div>',
-                            unsafe_allow_html=True,
-                        )
+                        st.subheader("📝 Executive Summary")
+                        st.info(brief.executive_summary or "_No summary available._")
 
-                        st.markdown("#### ⚠️ Open Risks & Flagged Issues")
+                        st.subheader("⚠️ Open Risks & Flagged Issues")
                         if brief.open_risks_and_flagged_issues:
                             for flag in brief.open_risks_and_flagged_issues:
-                                st.markdown(f"- {flag}")
+                                st.warning(f"• {flag}")
                         else:
                             st.success("✅ No risk signals detected in the last 90 days.")
 
-                        st.markdown("#### 💡 Recommended Talking Points")
+                        st.subheader("💡 Recommended Talking Points")
                         for i, point in enumerate(brief.recommended_talking_points, 1):
                             st.markdown(f"**{i}.** {point}")
 
                         with st.expander("🔖 Source ticket IDs"):
                             if brief.source_ticket_ids:
-                                st.write(brief.source_ticket_ids)
+                                for tid in brief.source_ticket_ids:
+                                    st.markdown(f"- `{tid}`")
                             else:
-                                st.caption("No source tickets found.")
+                                st.caption("No source tickets referenced.")
 
-                        if hasattr(brief, "deterministic") and brief.deterministic:
-                            st.caption("✓ This brief was generated deterministically (no LLM).")
+                        if getattr(brief, "deterministic", False):
+                            st.caption("✓ Generated deterministically — no LLM was called.")
 
                     except AccountDataUnavailable as exc:
                         st.error(
-                            f"⚠️ **Data unavailable:** {exc}\n\n"
-                            "Add `data/accounts.json` and `data/tickets.json` to enable account briefs."
+                            f"**Data unavailable:** {exc}\n\n"
+                            "Add `data/accounts.json` and `data/tickets.json` to enable "
+                            "account briefs."
                         )
                     except AccountNotFound as exc:
-                        st.warning(f"🔍 **Account not found:** `{account_id.strip()}` — {exc}")
+                        st.warning(
+                            f"**Account not found:** `{account_id.strip()}`\n\n{exc}"
+                        )
 
-    # ── Tab 4: Evaluation ──────────────────────────────────────────────────────
+    # ════════════════════════════════════════════════════════════════════════
+    # Tab 4 – Evaluation
+    # ════════════════════════════════════════════════════════════════════════
     with tab_eval:
-        st.markdown("### Evaluation Harness")
+        st.header("Evaluation Harness")
         st.caption(
             "Runs the built-in eval suite across triage and account-brief tasks. "
-            "Triage cases are fully deterministic; account-brief cases require starter data."
+            "Triage cases are fully deterministic; account-brief cases need starter data."
         )
 
         if st.button("▶️ Run evaluations", key="eval_btn"):
-            with st.spinner("Running evaluation suite…"):
+            with st.spinner("Running evaluation suite — this may take a few seconds…"):
                 results = run_all_evals(
                     data_dir=settings.data_dir,
                     kb_dir=settings.kb_dir,
@@ -487,28 +296,27 @@ def main() -> None:  # noqa: PLR0912, PLR0915  (many branches/statements by desi
             summary = results["summary"]
             pass_rate = summary["pass_rate"]
 
-            # Summary metrics
+            st.divider()
+            st.subheader("📈 Summary")
+
             c1, c2, c3, c4 = st.columns(4)
             c1.metric("📦 Total cases", summary["total"])
             c2.metric("✅ Passed", summary["passed"])
             c3.metric("❌ Failed", summary["failed"])
-            c4.metric(
-                "📈 Pass rate",
-                f"{pass_rate:.0%}",
-                delta=f"{pass_rate - 0.5:.0%} vs 50% baseline",
-            )
+            c4.metric("📈 Pass rate", f"{pass_rate:.0%}")
 
-            # Colour-coded pass-rate bar
-            _colour = "#2ed573" if pass_rate >= 0.7 else "#ffa502" if pass_rate >= 0.5 else "#ff4757"
-            st.markdown(
-                f'<div style="background:rgba(255,255,255,0.08);border-radius:999px;height:10px;margin:0.5rem 0 1rem;">'
-                f'<div style="background:{_colour};width:{pass_rate:.0%};border-radius:999px;height:10px;'
-                f'transition:width 0.6s ease;"></div></div>',
-                unsafe_allow_html=True,
-            )
+            # Progress bar (native)
+            st.progress(pass_rate, text=f"Pass rate: {pass_rate:.0%}")
+
+            if pass_rate >= 0.7:
+                st.success(f"✅ Pass rate {pass_rate:.0%} — above 70% threshold.")
+            elif pass_rate >= 0.5:
+                st.warning(f"⚠️ Pass rate {pass_rate:.0%} — below 70% threshold.")
+            else:
+                st.error(f"❌ Pass rate {pass_rate:.0%} — significant failures detected.")
 
             # Results table
-            st.markdown("#### 📋 Results table")
+            st.subheader("📋 Results table")
             all_cases = results["triage"] + results["account_brief"]
             df = pd.DataFrame(
                 [
@@ -522,12 +330,12 @@ def main() -> None:  # noqa: PLR0912, PLR0915  (many branches/statements by desi
                     for r in all_cases
                 ]
             )
-            st.dataframe(df, use_container_width=True)
+            st.dataframe(df, use_container_width=True, hide_index=True)
 
             with st.expander("📄 Markdown report"):
                 st.markdown(render_markdown_report(results))
 
-            with st.expander("🔩 Raw JSON"):
+            with st.expander("🔩 Raw JSON output"):
                 st.json(results)
 
 
