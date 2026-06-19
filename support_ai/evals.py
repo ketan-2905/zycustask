@@ -409,3 +409,19 @@ def run_all_evals(
             "mean_score": round(mean_score, 3),
         },
     }
+
+
+def export_eval_json(results: dict, output_path: str) -> None:
+    """Write evaluation results as a pretty-printed JSON file.
+
+    Complements write_eval_report() (which produces Markdown) so downstream
+    tooling can parse results programmatically without parsing Markdown.
+
+    Args:
+        results: Dict returned by run_all_evals().
+        output_path: Destination path; parent directories are created if absent.
+    """
+    import json as _json
+    os.makedirs(os.path.dirname(output_path) if os.path.dirname(output_path) else ".", exist_ok=True)
+    with open(output_path, "w", encoding="utf-8") as fh:
+        _json.dump(results, fh, indent=2, default=str)
