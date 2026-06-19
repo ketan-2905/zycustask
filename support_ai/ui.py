@@ -150,11 +150,10 @@ def main() -> None:
                 }
                 priority_label = _priority_labels.get(result.urgency_tier, result.urgency_tier)
 
-                col_a, col_b, col_c, col_d = st.columns(4)
+                col_a, col_b, col_c = st.columns(3)
                 col_a.metric("🚨 Priority", priority_label)
                 col_b.metric("🏷️ Category", result.issue_category.replace("_", " ").title())
-                col_c.metric("📐 Confidence", f"{result.confidence:.0%}")
-                col_d.metric("🏢 Product Area", result.product_area.replace("_", " ").title())
+                col_c.metric("🏢 Product Area", result.product_area.replace("_", " ").title())
 
                 st.info(f"**🏆 Recommended Team:** {result.recommended_team}")
 
