@@ -1,3 +1,9 @@
+## 🎬 Walkthrough Video
+
+[▶️ Click here to watch the walkthrough](https://drive.google.com/drive/folders/1RcGZ3KcqwFCDzGMeeaIPEmeXC-CgRA80?usp=sharing)
+
+---
+
 # Zycus Support AI
 
 AI-powered support triage and TAM account health summariser for the Zycus engineering assessment. All core behaviour is deterministic and API-key free by default.
