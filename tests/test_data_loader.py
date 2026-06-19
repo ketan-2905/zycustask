@@ -2,10 +2,7 @@ from __future__ import annotations
 
 import json
 
-import pytest
-
 from support_ai.data_loader import (
-    coerce_records,
     dataset_health,
     extract_first,
     get_tickets_for_account,

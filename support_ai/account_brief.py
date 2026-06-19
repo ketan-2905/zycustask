@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from support_ai.config import Settings, load_settings
 from support_ai.data_loader import (
@@ -24,7 +24,7 @@ class AccountNotFound(RuntimeError):
     pass
 
 
-_RISK_GROUPS: Dict[str, List[str]] = {
+_RISK_GROUPS: dict[str, list[str]] = {
     "churn_risk": [
         "churn", "cancel", "cancellation", "terminate", "competitor",
         "renewal at risk", "not renewing",
@@ -46,7 +46,7 @@ _RISK_GROUPS: Dict[str, List[str]] = {
     ],
 }
 
-_SEVERITY_MAP: Dict[str, str] = {
+_SEVERITY_MAP: dict[str, str] = {
     "security": "CRITICAL",
     "churn_risk": "HIGH",
     "reliability": "HIGH",
@@ -62,7 +62,7 @@ _HEALTH_KEYS = ["health_score", "health", "health_status"]
 _OWNER_KEYS = ["owner", "tam", "csm", "account_owner", "account_manager"]
 
 
-def _extract_field(raw: Dict[str, Any], keys: List[str]) -> Optional[str]:
+def _extract_field(raw: dict[str, Any], keys: list[str]) -> str | None:
     lower_map = {k.lower(): v for k, v in raw.items()}
     for key in keys:
         val = lower_map.get(key.lower())
@@ -71,7 +71,7 @@ def _extract_field(raw: Dict[str, Any], keys: List[str]) -> Optional[str]:
     return None
 
 
-def _parse_ticket_date(ticket: LoadedTicket) -> Optional[datetime]:
+def _parse_ticket_date(ticket: LoadedTicket) -> datetime | None:
     if not ticket.created_at:
         return None
     try:
@@ -83,15 +83,15 @@ def _parse_ticket_date(ticket: LoadedTicket) -> Optional[datetime]:
         return None
 
 
-def _max_date(tickets: List[LoadedTicket]) -> Optional[datetime]:
+def _max_date(tickets: list[LoadedTicket]) -> datetime | None:
     dates = [_parse_ticket_date(t) for t in tickets]
     valid = [d for d in dates if d is not None]
     return max(valid) if valid else None
 
 
 def compute_as_of(
-    tickets: List[LoadedTicket],
-    explicit_as_of: Optional[datetime] = None,
+    tickets: list[LoadedTicket],
+    explicit_as_of: datetime | None = None,
 ) -> datetime:
     if explicit_as_of is not None:
         return explicit_as_of
@@ -100,9 +100,9 @@ def compute_as_of(
 
 
 def filter_last_90_days(
-    tickets: List[LoadedTicket],
+    tickets: list[LoadedTicket],
     as_of: datetime,
-) -> List[LoadedTicket]:
+) -> list[LoadedTicket]:
     if as_of.tzinfo is None:
         as_of = as_of.replace(tzinfo=timezone.utc)
     cutoff = as_of - timedelta(days=90)
@@ -118,7 +118,7 @@ def filter_last_90_days(
 
 def extract_direct_quote(
     ticket: LoadedTicket,
-    keyword: Optional[str] = None,
+    keyword: str | None = None,
     max_chars: int = 220,
 ) -> str:
     raw_text = f"{ticket.subject} {ticket.body}".strip()
@@ -135,8 +135,8 @@ def extract_direct_quote(
     return clip_text(text, max_chars)
 
 
-def detect_risk_flags(tickets: List[LoadedTicket]) -> List[Dict[str, str]]:
-    flags: List[Dict[str, str]] = []
+def detect_risk_flags(tickets: list[LoadedTicket]) -> list[dict[str, str]]:
+    flags: list[dict[str, str]] = []
     for ticket in tickets:
         text = normalise_text(f"{ticket.subject} {ticket.body}")
         for risk_type, signals in _RISK_GROUPS.items():
@@ -159,7 +159,7 @@ def detect_risk_flags(tickets: List[LoadedTicket]) -> List[Dict[str, str]]:
     return flags
 
 
-def _account_meta(account: LoadedAccount) -> Dict[str, Optional[str]]:
+def _account_meta(account: LoadedAccount) -> dict[str, str | None]:
     raw = account.raw
     return {
         "name": _extract_field(raw, _ACCOUNT_NAME_KEYS),
@@ -171,8 +171,8 @@ def _account_meta(account: LoadedAccount) -> Dict[str, Optional[str]]:
 
 def build_executive_summary(
     account: LoadedAccount,
-    tickets_90d: List[LoadedTicket],
-    flags: List[Dict[str, str]],
+    tickets_90d: list[LoadedTicket],
+    flags: list[dict[str, str]],
 ) -> str:
     meta = _account_meta(account)
     name = meta["name"] or f"Account {account.account_id}"
@@ -211,12 +211,12 @@ def build_executive_summary(
 
 def build_talking_points(
     account: LoadedAccount,
-    tickets_90d: List[LoadedTicket],
-    flags: List[Dict[str, str]],
-) -> List[str]:
+    tickets_90d: list[LoadedTicket],
+    flags: list[dict[str, str]],
+) -> list[str]:
     meta = _account_meta(account)
     name = meta["name"] or f"Account {account.account_id}"
-    points: List[str] = []
+    points: list[str] = []
 
     if not tickets_90d:
         points.append(
@@ -278,9 +278,9 @@ def build_talking_points(
 
 def generate_account_brief(
     account_id: str,
-    data_dir: Optional[str] = None,
-    as_of: Optional[datetime] = None,
-    settings: Optional[Settings] = None,
+    data_dir: str | None = None,
+    as_of: datetime | None = None,
+    settings: Settings | None = None,
 ) -> AccountBrief:
     if settings is None:
         settings = load_settings()

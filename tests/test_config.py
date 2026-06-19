@@ -2,7 +2,7 @@
 import os
 from unittest.mock import patch
 
-from support_ai.config import load_settings, get_effective_llm_provider
+from support_ai.config import get_effective_llm_provider, load_settings
 
 
 def test_default_app_env_is_development():

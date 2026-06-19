@@ -1,10 +1,6 @@
 from __future__ import annotations
 
-import pytest
-
 from support_ai.kb_retrieval import (
-    extract_category,
-    extract_title,
     load_knowledge_docs,
     make_snippet,
     retrieve_docs,

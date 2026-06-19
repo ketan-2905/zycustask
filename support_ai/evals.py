@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from support_ai.account_brief import (
     AccountDataUnavailable,
@@ -15,10 +14,9 @@ from support_ai.deterministic import clamp_score
 from support_ai.schemas import AccountBrief, EvalCaseResult, TriageOutput
 from support_ai.triage import triage_ticket
 
-
 # ── Triage eval cases ──────────────────────────────────────────────────────────
 
-_TRIAGE_CASES: List[Dict[str, Any]] = [
+_TRIAGE_CASES: list[dict[str, Any]] = [
     {
         "case_id": "triage_sso_login",
         "description": "SSO/login failure",
@@ -61,8 +59,8 @@ _TRIAGE_CASES: List[Dict[str, Any]] = [
 ]
 
 
-def score_triage_case(case: Dict[str, Any], output: TriageOutput) -> EvalCaseResult:
-    reasons: List[str] = []
+def score_triage_case(case: dict[str, Any], output: TriageOutput) -> EvalCaseResult:
+    reasons: list[str] = []
     score = 0.0
 
     # Category match
@@ -133,7 +131,7 @@ def score_triage_case(case: Dict[str, Any], output: TriageOutput) -> EvalCaseRes
 
 # ── Account brief eval cases ───────────────────────────────────────────────────
 
-_NONEXISTENT_ACCOUNT_CASE: Dict[str, Any] = {
+_NONEXISTENT_ACCOUNT_CASE: dict[str, Any] = {
     "case_id": "brief_adversarial_nonexistent",
     "description": "Adversarial: non-existent account ID",
     "account_id": "__DOES_NOT_EXIST_9999__",
@@ -143,11 +141,11 @@ _NONEXISTENT_ACCOUNT_CASE: Dict[str, Any] = {
 
 
 def score_account_brief_case(
-    case: Dict[str, Any],
-    output: Optional[AccountBrief] = None,
-    error: Optional[Exception] = None,
+    case: dict[str, Any],
+    output: AccountBrief | None = None,
+    error: Exception | None = None,
 ) -> EvalCaseResult:
-    reasons: List[str] = []
+    reasons: list[str] = []
     score = 0.0
 
     expect_error = case.get("expect_error")
@@ -243,7 +241,7 @@ def score_account_brief_case(
     )
 
 
-def run_triage_evals(kb_dir: Optional[str] = None) -> List[EvalCaseResult]:
+def run_triage_evals(kb_dir: str | None = None) -> list[EvalCaseResult]:
     results = []
     if kb_dir is None:
         settings = load_settings()
@@ -263,15 +261,15 @@ def run_triage_evals(kb_dir: Optional[str] = None) -> List[EvalCaseResult]:
     return results
 
 
-def run_account_brief_evals(data_dir: Optional[str] = None) -> List[EvalCaseResult]:
+def run_account_brief_evals(data_dir: str | None = None) -> list[EvalCaseResult]:
     if data_dir is None:
         settings = load_settings()
         data_dir = settings.data_dir
 
-    results: List[EvalCaseResult] = []
+    results: list[EvalCaseResult] = []
 
     # Collect real account IDs (up to 4)
-    real_account_ids: List[str] = []
+    real_account_ids: list[str] = []
     try:
         accounts = load_accounts(data_dir)
         real_account_ids = [a.account_id for a in accounts[:4]]
@@ -279,7 +277,7 @@ def run_account_brief_evals(data_dir: Optional[str] = None) -> List[EvalCaseResu
         pass
 
     # Build dynamic eval cases from real accounts
-    real_cases: List[Dict[str, Any]] = []
+    real_cases: list[dict[str, Any]] = []
     for i, aid in enumerate(real_account_ids):
         real_cases.append({
             "case_id": f"brief_real_account_{i+1}",
@@ -335,7 +333,7 @@ def run_account_brief_evals(data_dir: Optional[str] = None) -> List[EvalCaseResu
     return results
 
 
-def render_markdown_report(results: Dict[str, Any]) -> str:
+def render_markdown_report(results: dict[str, Any]) -> str:
     lines = [
         "# Evaluation Report",
         "",
@@ -372,7 +370,7 @@ def render_markdown_report(results: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def write_eval_report(results: Dict[str, Any], output_path: str) -> None:
+def write_eval_report(results: dict[str, Any], output_path: str) -> None:
     os.makedirs(os.path.dirname(output_path) if os.path.dirname(output_path) else ".", exist_ok=True)
     report = render_markdown_report(results)
     with open(output_path, "w", encoding="utf-8") as fh:
@@ -380,9 +378,9 @@ def write_eval_report(results: Dict[str, Any], output_path: str) -> None:
 
 
 def run_all_evals(
-    data_dir: Optional[str] = None,
-    kb_dir: Optional[str] = None,
-) -> Dict[str, Any]:
+    data_dir: str | None = None,
+    kb_dir: str | None = None,
+) -> dict[str, Any]:
     settings = load_settings()
     if data_dir is None:
         data_dir = settings.data_dir

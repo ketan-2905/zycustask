@@ -48,8 +48,9 @@ def cmd_account_brief(args: argparse.Namespace) -> int:
 
 
 def cmd_eval(args: argparse.Namespace) -> int:
-    from support_ai.evals import run_all_evals, write_eval_report, render_markdown_report
     import os
+
+    from support_ai.evals import run_all_evals, write_eval_report
 
     settings = load_settings()
     results = run_all_evals(data_dir=settings.data_dir, kb_dir=settings.kb_dir)

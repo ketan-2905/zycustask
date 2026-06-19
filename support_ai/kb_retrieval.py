@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import List
 
 from support_ai.deterministic import clip_text, stable_hash, tokenize
 from support_ai.redaction import redact_pii
@@ -74,10 +73,10 @@ def make_snippet(content: str, query: str, max_chars: int = 500) -> str:
     return redact_pii(clip_text(snippet, max_chars))
 
 
-def load_knowledge_docs(kb_dir: str) -> List[KnowledgeDoc]:
+def load_knowledge_docs(kb_dir: str) -> list[KnowledgeDoc]:
     if not os.path.isdir(kb_dir):
         return []
-    docs: List[KnowledgeDoc] = []
+    docs: list[KnowledgeDoc] = []
     for root, _dirs, files in os.walk(kb_dir):
         for fname in sorted(files):
             if not fname.endswith(".md"):
@@ -102,10 +101,10 @@ def load_knowledge_docs(kb_dir: str) -> List[KnowledgeDoc]:
 
 def retrieve_docs(
     query: str,
-    docs: List[KnowledgeDoc],
+    docs: list[KnowledgeDoc],
     top_k: int = 3,
     min_score: float = 0.05,
-) -> List[RetrievalMatch]:
+) -> list[RetrievalMatch]:
     scored: list[tuple[float, str, RetrievalMatch]] = []
     for doc in docs:
         score = lexical_score(query, doc)

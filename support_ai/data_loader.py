@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from support_ai.deterministic import stable_hash
 from support_ai.schemas import DataHealth, LoadedAccount, LoadedTicket
@@ -28,7 +28,7 @@ _DATETIME_FORMATS = [
 ]
 
 
-def load_json_file(path: str) -> Tuple[Optional[Any], Optional[str]]:
+def load_json_file(path: str) -> tuple[Any | None, str | None]:
     if not os.path.exists(path):
         return None, f"file not found: {path}"
     if os.path.getsize(path) == 0:
@@ -40,7 +40,7 @@ def load_json_file(path: str) -> Tuple[Optional[Any], Optional[str]]:
         return None, f"invalid JSON: {exc}"
 
 
-def coerce_records(payload: Any) -> List[Dict[str, Any]]:
+def coerce_records(payload: Any) -> list[dict[str, Any]]:
     if isinstance(payload, list):
         return [r for r in payload if isinstance(r, dict)]
     if isinstance(payload, dict):
@@ -58,8 +58,8 @@ def coerce_records(payload: Any) -> List[Dict[str, Any]]:
     return []
 
 
-def extract_first(raw: Dict[str, Any], keys: List[str], default: Any = None) -> Any:
-    lower_map: Dict[str, Any] = {k.lower(): v for k, v in raw.items()}
+def extract_first(raw: dict[str, Any], keys: list[str], default: Any = None) -> Any:
+    lower_map: dict[str, Any] = {k.lower(): v for k, v in raw.items()}
     for key in keys:
         val = lower_map.get(key.lower())
         if val is not None and val != "":
@@ -67,7 +67,7 @@ def extract_first(raw: Dict[str, Any], keys: List[str], default: Any = None) -> 
     return default
 
 
-def parse_datetime(value: Any) -> Optional[str]:
+def parse_datetime(value: Any) -> str | None:
     if value is None:
         return None
     s = str(value).strip()
@@ -79,7 +79,7 @@ def parse_datetime(value: Any) -> Optional[str]:
     return s
 
 
-def load_accounts(data_dir: str) -> List[LoadedAccount]:
+def load_accounts(data_dir: str) -> list[LoadedAccount]:
     path = os.path.join(data_dir, "accounts.json")
     payload, _ = load_json_file(path)
     if payload is None:
@@ -92,7 +92,7 @@ def load_accounts(data_dir: str) -> List[LoadedAccount]:
     return accounts
 
 
-def load_tickets(data_dir: str) -> List[LoadedTicket]:
+def load_tickets(data_dir: str) -> list[LoadedTicket]:
     path = os.path.join(data_dir, "tickets.json")
     payload, _ = load_json_file(path)
     if payload is None:
@@ -121,14 +121,14 @@ def load_tickets(data_dir: str) -> List[LoadedTicket]:
     return tickets
 
 
-def get_account_by_id(data_dir: str, account_id: str) -> Optional[LoadedAccount]:
+def get_account_by_id(data_dir: str, account_id: str) -> LoadedAccount | None:
     for acc in load_accounts(data_dir):
         if acc.account_id == account_id:
             return acc
     return None
 
 
-def get_tickets_for_account(data_dir: str, account_id: str) -> List[LoadedTicket]:
+def get_tickets_for_account(data_dir: str, account_id: str) -> list[LoadedTicket]:
     return [t for t in load_tickets(data_dir) if t.account_id == account_id]
 
 

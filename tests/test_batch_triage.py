@@ -1,7 +1,6 @@
 """Integration tests for batch_triage convenience wrapper."""
 from support_ai.triage import batch_triage
 
-
 _TICKETS = [
     {"subject": "SSO broken", "body": "SAML login fails for all users in production"},
     {"subject": "Invoice wrong", "body": "We were charged twice for our subscription billing cycle"},

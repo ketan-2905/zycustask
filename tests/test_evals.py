@@ -3,20 +3,17 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
+from support_ai.account_brief import AccountDataUnavailable, AccountNotFound
 from support_ai.evals import (
+    _TRIAGE_CASES,
     render_markdown_report,
     run_account_brief_evals,
     run_all_evals,
     run_triage_evals,
     score_account_brief_case,
     score_triage_case,
-    _TRIAGE_CASES,
 )
-from support_ai.account_brief import AccountNotFound, AccountDataUnavailable
 from support_ai.schemas import EvalCaseResult
-
 
 # ── Test 1: Triage evals return >= 5 results ─────────────────────────────────
 

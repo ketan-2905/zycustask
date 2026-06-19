@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from support_ai.config import Settings, load_settings
 from support_ai.deterministic import clamp_score, normalise_text
@@ -12,7 +12,7 @@ from support_ai.schemas import RetrievalMatch, TicketInput, TriageOutput
 
 # ── Category signals ───────────────────────────────────────────────────────────
 
-_CATEGORY_SIGNALS: Dict[str, List[str]] = {
+_CATEGORY_SIGNALS: dict[str, list[str]] = {
     "authentication_sso": [
         "login", "sso", "saml", "oauth", "password", "token", "mfa", "2fa",
         "auth", "authentication", "sign in", "logout", "session", "credential",
@@ -60,7 +60,7 @@ _P4_SIGNALS = [
     "cosmetic", "wondering", "not urgent", "low priority", "when possible",
 ]
 
-_URGENCY_TIERS: List[Tuple[str, List[str]]] = [
+_URGENCY_TIERS: list[tuple[str, list[str]]] = [
     ("P1", _P1_SIGNALS),
     ("P2", _P2_SIGNALS),
     ("P3", _P3_SIGNALS),
@@ -69,7 +69,7 @@ _URGENCY_TIERS: List[Tuple[str, List[str]]] = [
 
 # ── Broad product area inference ───────────────────────────────────────────────
 
-_BROAD_PRODUCT_SIGNALS: Dict[str, List[str]] = {
+_BROAD_PRODUCT_SIGNALS: dict[str, list[str]] = {
     "billing": ["billing", "invoice", "payment", "subscription", "charge", "credit"],
     "authentication": ["login", "sso", "oauth", "saml", "mfa", "auth", "authentication"],
     "integrations": ["api", "webhook", "integration", "connector", "endpoint", "sdk"],
@@ -78,7 +78,7 @@ _BROAD_PRODUCT_SIGNALS: Dict[str, List[str]] = {
 
 # ── Follow-up questions per category ──────────────────────────────────────────
 
-_FOLLOW_UP: Dict[str, str] = {
+_FOLLOW_UP: dict[str, str] = {
     "authentication_sso": (
         "Could you share the exact error message and the browser or client being used?"
     ),
@@ -105,7 +105,7 @@ _FOLLOW_UP: Dict[str, str] = {
 # ── Internal helpers ───────────────────────────────────────────────────────────
 
 
-def _signal_hits(text: str, signals: List[str]) -> List[str]:
+def _signal_hits(text: str, signals: list[str]) -> list[str]:
     normalised = normalise_text(text)
     matched = []
     for sig in signals:
@@ -131,7 +131,7 @@ def normalize_ticket_input(ticket: Any) -> TicketInput:
     return TicketInput(subject=text[:200], body=text, raw=text)
 
 
-def infer_issue_category(text: str) -> Tuple[str, List[str]]:
+def infer_issue_category(text: str) -> tuple[str, list[str]]:
     best_cat, best_count, best_matched = "unknown", 0, []
     for category, signals in _CATEGORY_SIGNALS.items():
         matched = _signal_hits(text, signals)
@@ -143,7 +143,7 @@ def infer_issue_category(text: str) -> Tuple[str, List[str]]:
     return best_cat, reasons
 
 
-def infer_urgency_tier(text: str) -> Tuple[str, List[str]]:
+def infer_urgency_tier(text: str) -> tuple[str, list[str]]:
     for tier, signals in _URGENCY_TIERS:
         matched = _signal_hits(text, signals)
         if matched:
@@ -152,8 +152,8 @@ def infer_urgency_tier(text: str) -> Tuple[str, List[str]]:
 
 
 def infer_product_area(
-    text: str, matches: List[RetrievalMatch]
-) -> Tuple[str, List[str]]:
+    text: str, matches: list[RetrievalMatch]
+) -> tuple[str, list[str]]:
     for match in matches:
         parts = Path(match.path).parts
         for i, part in enumerate(parts):
@@ -214,8 +214,8 @@ def draft_first_response(ticket: TicketInput, output_without_draft: TriageOutput
 
 def triage_ticket(
     ticket: Any,
-    kb_dir: Optional[str] = None,
-    settings: Optional[Settings] = None,
+    kb_dir: str | None = None,
+    settings: Settings | None = None,
 ) -> TriageOutput:
     if settings is None:
         settings = load_settings()

@@ -1,15 +1,11 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 from fastapi.testclient import TestClient
 
-from support_ai.api import app
 from support_ai.account_brief import AccountDataUnavailable, AccountNotFound
-from support_ai.schemas import DataHealth, TriageOutput
+from support_ai.api import app
 
 client = TestClient(app)
 

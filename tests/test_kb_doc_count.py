@@ -1,7 +1,4 @@
 """Tests for kb_doc_count() in kb_retrieval."""
-import os
-import json
-import tempfile
 
 from support_ai.kb_retrieval import kb_doc_count
 

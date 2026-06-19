@@ -32,7 +32,7 @@ def load_settings() -> Settings:
     )
 
 
-def get_effective_llm_provider(settings: "Settings") -> str:
+def get_effective_llm_provider(settings: Settings) -> str:
     """Return the resolved LLM provider, normalising to 'none' for unknown values.
 
     Accepted values: 'none', 'openai', 'anthropic'.

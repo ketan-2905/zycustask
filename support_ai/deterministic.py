@@ -4,7 +4,8 @@ import hashlib
 import json
 import re
 import unicodedata
-from typing import Any, Iterable, List, TypeVar
+from collections.abc import Iterable
+from typing import Any, TypeVar
 
 T = TypeVar("T")
 
@@ -20,13 +21,13 @@ def normalise_text(text: str) -> str:
     return text
 
 
-def tokenize(text: str) -> List[str]:
+def tokenize(text: str) -> list[str]:
     return re.findall(r"[a-z0-9]+", normalise_text(text))
 
 
-def dedupe_keep_order(items: Iterable[T]) -> List[T]:
+def dedupe_keep_order(items: Iterable[T]) -> list[T]:
     seen: set = set()
-    result: List[T] = []
+    result: list[T] = []
     for item in items:
         if item not in seen:
             seen.add(item)

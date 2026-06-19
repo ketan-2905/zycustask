@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Optional
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
@@ -19,9 +17,9 @@ app = FastAPI(title="Zycus Support AI", version="0.1.0")
 
 
 class TriageRequest(BaseModel):
-    subject: Optional[str] = None
-    body: Optional[str] = None
-    text: Optional[str] = None
+    subject: str | None = None
+    body: str | None = None
+    text: str | None = None
 
 
 @app.get("/health")

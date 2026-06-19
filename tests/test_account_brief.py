@@ -9,14 +9,11 @@ import pytest
 from support_ai.account_brief import (
     AccountDataUnavailable,
     AccountNotFound,
-    detect_risk_flags,
+    compute_as_of,
     filter_last_90_days,
     generate_account_brief,
-    compute_as_of,
-    extract_direct_quote,
 )
 from support_ai.schemas import LoadedTicket
-
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
