@@ -117,46 +117,12 @@ def main() -> None:
             "first response — all deterministically, no LLM required."
         )
 
-        # Demo presets
-        _PRESETS: dict[str, tuple[str, str]] = {
-            "P1 Outage – production system down for all users": (
-                "Production system down",
-                "Complete outage for all users in production. System is down and data loss is occurring.",
-            ),
-            "Billing – invoice charged twice this cycle": (
-                "Invoice is incorrect",
-                "We were charged twice for our subscription this billing cycle.",
-            ),
-            "SSO – SAML login broken for all users": (
-                "SSO login broken",
-                "Users cannot authenticate via SAML SSO since this morning. All production users affected.",
-            ),
-            "API – webhook endpoint returning 500 errors": (
-                "Webhook failing",
-                "Our webhook endpoint is returning 500 on every POST payload. Integration is broken.",
-            ),
-            "How-to – how do I configure SSO?": (
-                "How to configure SSO",
-                "I have a question about how to set up SAML SSO. Need documentation or a guide.",
-            ),
-        }
-
-        preset_options = ["— select a demo ticket —", *_PRESETS.keys()]
-        preset = st.selectbox("🚀 Quick demo presets", preset_options)
-
-        if preset != "— select a demo ticket —":
-            _default_subject, _default_body = _PRESETS[preset]
-        else:
-            _default_subject, _default_body = "", ""
-
         subject = st.text_input(
             "Subject",
-            value=_default_subject,
             placeholder="e.g. SSO login failing for all production users",
         )
         body = st.text_area(
             "Body / Description",
-            value=_default_body,
             placeholder="Describe the issue in detail…",
             height=130,
         )
