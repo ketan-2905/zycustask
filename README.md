@@ -136,3 +136,20 @@ By default (`LLM_PROVIDER=none`) every response is fully deterministic — no LL
 - **KB retrieval**: Lexical overlap scoring (no embeddings). Accuracy improves with a well-structured knowledge base.
 - **Triage classification**: Rule-based keyword matching. Edge cases may require tuning the signal lists in `triage.py`.
 - **Scale**: Linear JSON scans are adequate for assessment volumes but would need indexed storage at production scale (see `DESIGN_NOTE.md`).
+
+---
+
+## CI Status
+
+![CI](https://github.com/ketan-2905/zycustask/actions/workflows/ci.yml/badge.svg)
+
+Tests run on Python 3.11 and 3.12. Lint enforced via Ruff.
+
+---
+
+## Contributing
+
+1. Branch from `main` using `feat/<topic>` or `fix/<topic>`.
+2. Keep commits atomic — one logical change per commit.
+3. Run `pytest -q` and `ruff check support_ai/ tests/` before pushing.
+4. Open a pull request against `main`; CI must be green before merge.
